@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SITAMA Login',
+      title: 'SITAMA Login test',
       debugShowCheckedModeBanner: false, // Menghilangkan banner "Debug"
       theme: ThemeData(
         // Tema dasar untuk warna biru Polines
