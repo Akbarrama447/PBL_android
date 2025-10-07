@@ -66,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               // 2. HEADER: LOGO DAN NAMA APLIKASI
               _buildHeader(),
-              
+
               const SizedBox(height: 50),
 
               // 3. FORM LOGIN
@@ -93,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
         // Logo (Pastikan nama file di assets/ sudah benar!)
         Image.asset(
           'assets/logo.jpeg', // Ganti ke 'assets/logo.jpeg' atau nama file kamu
-          height: 100, 
+          height: 100,
         ),
         const SizedBox(height: 15),
         // SITAMA Text
@@ -112,8 +112,9 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildLoginForm(BuildContext context) {
     // Theme data untuk border dan dekorasi input
     final inputDecoration = InputDecoration(
-      hintText: 'Alamat Email',
-      contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
+      hintText: 'Alamat Email Polines',
+      contentPadding:
+          const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
       // Border default
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
@@ -122,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // Border saat tidak fokus
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
-        borderSide: const BorderSide(color: Color(0xFFBBDEFB)), 
+        borderSide: const BorderSide(color: Color(0xFFBBDEFB)),
       ),
       // Border saat fokus (biru)
       focusedBorder: OutlineInputBorder(
@@ -135,13 +136,14 @@ class _LoginScreenState extends State<LoginScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Label Alamat Email
-        const Text('Alamat Email', style: TextStyle(fontWeight: FontWeight.w500)),
+        const Text('Alamat Email',
+            style: TextStyle(fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
         TextField(
           decoration: inputDecoration.copyWith(hintText: 'Alamat Email'),
           keyboardType: TextInputType.emailAddress,
         ),
-        
+
         const SizedBox(height: 20),
 
         // Label Password
@@ -167,7 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
-        
+
         const SizedBox(height: 10),
 
         // Checkbox "Ingat Saya" dan "Lupa password?"
@@ -188,14 +190,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       });
                     },
                     activeColor: const Color(0xFF2196F3),
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap, // Membuat lebih ringkas
+                    materialTapTargetSize: MaterialTapTargetSize
+                        .shrinkWrap, // Membuat lebih ringkas
                   ),
                 ),
                 const SizedBox(width: 4),
                 const Text('Ingat Saya', style: TextStyle(fontSize: 14)),
               ],
             ),
-            
+
             // Lupa Password Button
             TextButton(
               onPressed: () {},
@@ -232,16 +235,19 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             child: const Text(
               'Masuk',
-              style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600),
             ),
           ),
         ),
 
         const SizedBox(height: 20),
-        
+
         // Teks "atau"
         const Text('atau', style: TextStyle(color: Colors.grey)),
-        
+
         const SizedBox(height: 20),
 
         // Tombol Login Google Polines
