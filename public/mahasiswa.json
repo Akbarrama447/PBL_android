@@ -1,0 +1,11 @@
+[
+    {
+        "name": "Ambatukam",
+        "email": "Ambatukam@gmail.com",
+        "password": "password123",
+        "password_confirmation": "password123", 
+        "role": "mahasiswa",
+        "nim": "1905011001", 
+        "major": "Teknik Informatika"
+    }
+]
