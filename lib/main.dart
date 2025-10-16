@@ -92,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
       children: [
         // Logo (Pastikan nama file di assets/ sudah benar!)
         Image.asset(
-          'assets/logo.jpeg', // Ganti ke 'assets/logo.jpeg' atau nama file kamu
+          'assets/logo_polines.png', // Ganti ke 'assets/logo.jpeg' atau nama file kamu
           height: 100, 
         ),
         const SizedBox(height: 15),
