@@ -1,4 +1,23 @@
 import 'package:flutter/material.dart';
+// --- TAMBAHAN LOGIKA ---
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import 'home_page.dart'; // Impor halaman home baru
+// -----------------------
+
+//
+// -------------------------------------------------------------------
+// ---------------- GANTI ALAMAT IP DI BAWAH INI ---------------------
+// -------------------------------------------------------------------
+//
+// Ganti IP ini sesuai situasimu:
+// - Pakai "10.0.2.2" jika kamu pakai Emulator Android
+// - Pakai "192.168.x.x" (IP laptopmu) jika kamu pakai HP Fisik
+//   (Pastikan 'php artisan serve --host=0.0.0.0' sudah jalan)
+const String API_HOST = "192.168.1.83:8000"; // <--- GANTI INI
+//
+// -------------------------------------------------------------------
 
 void main() {
   runApp(const MyApp());
@@ -13,9 +32,7 @@ class MyApp extends StatelessWidget {
       title: 'SITAMA Login',
       debugShowCheckedModeBanner: false, // Menghilangkan banner "Debug"
       theme: ThemeData(
-        // Tema dasar untuk warna biru Polines
         primarySwatch: Colors.blue,
-        // Properti untuk menghilangkan efek visual yang tidak ada di desain asli
         splashFactory: NoSplash.splashFactory,
         hoverColor: Colors.transparent,
       ),
@@ -24,7 +41,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Menggunakan StatefulWidget agar kita bisa mengelola state seperti checkbox dan visibility
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -33,50 +49,123 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // State untuk checkbox "Ingat Saya"
+  // State UI-mu yang sudah ada
   bool _rememberMe = true;
-  // State untuk toggle visibilitas password
   bool _isPasswordVisible = false;
+
+  // --- TAMBAHAN LOGIKA ---
+  // Controller untuk mengambil teks dari TextField
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  // State untuk status loading tombol
+  bool _isLoading = false;
+  // State untuk menampilkan pesan error
+  String _errorMessage = '';
+
+  @override
+  void dispose() {
+    // Selalu dispose controller untuk menghindari memory leak
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  // Fungsi untuk memanggil API Login
+  Future<void> _login() async {
+    // 1. Tampilkan loading di tombol & bersihkan error lama
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      // 2. Kirim request POST ke API Laravel
+      final response = await http.post(
+        Uri.parse('http://$API_HOST/api/login'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'email': _emailController.text,
+          'password': _passwordController.text,
+        }),
+      );
+
+      final responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        // 3. JIKA SUKSES (STATUS 200)
+        final String token = responseBody['token'];
+
+        // Simpan token ke HP
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('auth_token', token);
+
+        // Pindah ke Halaman Home
+        if (mounted) { // Cek apakah widget masih ada
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        }
+      } else {
+        // 4. JIKA GAGAL (Status bukan 200, misal 401)
+        setState(() {
+          _errorMessage = responseBody['message'] ?? 'Login gagal. Coba lagi.';
+        });
+      }
+    } catch (e) {
+      // 5. JIKA ERROR KONEKSI (Server mati, IP salah, HP tidak ada internet)
+      setState(() {
+        _errorMessage = 'Gagal terhubung ke server. Cek IP & koneksi internetmu.';
+      });
+    } finally {
+      // 6. APAPUN HASILNYA, hentikan loading
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+  // --- AKHIR DARI TAMBAHAN LOGIKA ---
 
   @override
   Widget build(BuildContext context) {
-    // Scaffold untuk kerangka halaman
     return Scaffold(
       body: Container(
-        // 1. BACKGROUND GRADASI
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            // Warna disesuaikan agar mirip dengan gambar (biru muda ke putih)
             colors: [
-              Color(0xFFBBDEFB), // Biru Muda Polines Light (Bisa kamu ganti)
-              Color(0xFFFFFFFF), // Putih
+              Color(0xFFBBDEFB),
+              Color(0xFFFFFFFF),
             ],
           ),
         ),
-        // SingleChildScrollView agar layar bisa di-scroll saat keyboard muncul
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Jarak dari atas (margin)
               SizedBox(height: MediaQuery.of(context).padding.top + 60),
-
-              // 2. HEADER: LOGO DAN NAMA APLIKASI
               _buildHeader(),
-              
               const SizedBox(height: 50),
-
-              // 3. FORM LOGIN
               _buildLoginForm(context),
 
+              // --- TAMBAHAN LOGIKA: Tampilkan Error ---
+              if (_errorMessage.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 20.0),
+                  child: Text(
+                    _errorMessage,
+                    style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              // ------------------------------------
+
               const SizedBox(height: 30),
-
-              // 4. TOMBOL UTAMA & LOGIN GOOGLE
               _buildActionButtons(context),
-
               const SizedBox(height: 40),
             ],
           ),
@@ -85,24 +174,20 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // --- Widget Pembantu (Methods) ---
-
   Widget _buildHeader() {
     return Column(
       children: [
-        // Logo (Pastikan nama file di assets/ sudah benar!)
         Image.asset(
-          'assets/logo.jpeg', // Ganti ke 'assets/logo.jpeg' atau nama file kamu
-          height: 100, 
+          'assets/logo.jpeg',
+          height: 100,
         ),
         const SizedBox(height: 15),
-        // SITAMA Text
         const Text(
           'SITAMA',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF1565C0), // Warna biru tua
+            color: Color(0xFF1565C0),
           ),
         ),
       ],
@@ -110,21 +195,17 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildLoginForm(BuildContext context) {
-    // Theme data untuk border dan dekorasi input
     final inputDecoration = InputDecoration(
       hintText: 'Alamat Email',
       contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
-      // Border default
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
         borderSide: const BorderSide(color: Color(0xFFBBDEFB)),
       ),
-      // Border saat tidak fokus
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
-        borderSide: const BorderSide(color: Color(0xFFBBDEFB)), 
+        borderSide: const BorderSide(color: Color(0xFFBBDEFB)),
       ),
-      // Border saat fokus (biru)
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
         borderSide: const BorderSide(color: Color(0xFF2196F3), width: 2.0),
@@ -134,32 +215,27 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Label Alamat Email
         const Text('Alamat Email', style: TextStyle(fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
         TextField(
+          controller: _emailController, // <-- SAMBUNGKAN CONTROLLER
           decoration: inputDecoration.copyWith(hintText: 'Alamat Email'),
           keyboardType: TextInputType.emailAddress,
         ),
-        
         const SizedBox(height: 20),
-
-        // Label Password
         const Text('Password', style: TextStyle(fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
-        // Password Field
         TextField(
-          obscureText: !_isPasswordVisible, // Menggunakan state
+          controller: _passwordController, // <-- SAMBUNGKAN CONTROLLER
+          obscureText: !_isPasswordVisible,
           decoration: inputDecoration.copyWith(
             hintText: 'Password',
-            // Ikon mata untuk toggle password
             suffixIcon: IconButton(
               icon: Icon(
                 _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
                 color: Colors.grey,
               ),
               onPressed: () {
-                // Mengubah state saat ikon diklik
                 setState(() {
                   _isPasswordVisible = !_isPasswordVisible;
                 });
@@ -167,36 +243,30 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
-        
         const SizedBox(height: 10),
-
-        // Checkbox "Ingat Saya" dan "Lupa password?"
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Checkbox dan Text
             Row(
               children: [
                 SizedBox(
                   width: 24,
                   height: 24,
                   child: Checkbox(
-                    value: _rememberMe, // Menggunakan state
+                    value: _rememberMe,
                     onChanged: (bool? newValue) {
                       setState(() {
                         _rememberMe = newValue ?? false;
                       });
                     },
                     activeColor: const Color(0xFF2196F3),
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap, // Membuat lebih ringkas
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
                 const SizedBox(width: 4),
                 const Text('Ingat Saya', style: TextStyle(fontSize: 14)),
               ],
             ),
-            
-            // Lupa Password Button
             TextButton(
               onPressed: () {},
               style: TextButton.styleFrom(
@@ -217,39 +287,54 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildActionButtons(BuildContext context) {
     return Column(
       children: [
-        // Tombol Masuk
         SizedBox(
           width: double.infinity,
           height: 50,
           child: ElevatedButton(
-            onPressed: () {},
+            // --- TAMBAHAN LOGIKA ---
+            // Nonaktifkan tombol saat loading, panggil _login saat tidak
+            onPressed: _isLoading ? null : _login,
+            // ---------------------
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2196F3), // Biru Solid
+              backgroundColor: const Color(0xFF2196F3),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.0),
               ),
               elevation: 0,
             ),
-            child: const Text(
-              'Masuk',
-              style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.w600),
-            ),
+            // --- TAMBAHAN LOGIKA ---
+            // Ganti teks jadi loading spinner
+            child: _isLoading
+                ? const SizedBox(
+                    width: 25,
+                    height: 25,
+                    // Bikin spinner-nya warna putih
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 3.0,
+                    ),
+                  )
+                : const Text(
+                    'Masuk',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+            // ---------------------
           ),
         ),
-
         const SizedBox(height: 20),
-        
-        // Teks "atau"
         const Text('atau', style: TextStyle(color: Colors.grey)),
-        
         const SizedBox(height: 20),
-
-        // Tombol Login Google Polines
         SizedBox(
           width: double.infinity,
           height: 50,
           child: OutlinedButton(
-            onPressed: () {},
+            onPressed: () {
+              // TODO: Logika login Google
+            },
             style: OutlinedButton.styleFrom(
               backgroundColor: Colors.white,
               side: const BorderSide(color: Color(0xFF2196F3), width: 1.0),
@@ -260,10 +345,8 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Menggunakan aset gambar Google (harus ada di assets/images/icon_google.png)
-                // Jika kamu kesulitan dengan ikon Google, ganti baris ini dengan Icon(Icons.g_mobiledata, size: 30, color: Colors.blue)
                 Image.asset(
-                  'assets/google.png', // Ganti dengan path ikon Google kamu
+                  'assets/google.png',
                   height: 20,
                 ),
                 const SizedBox(width: 8),
@@ -275,10 +358,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
-
         const SizedBox(height: 8),
-
-        // Keterangan (untuk Dosen)
         const Text(
           '(untuk Dosen)',
           style: TextStyle(fontSize: 12, color: Colors.grey),
@@ -287,3 +367,4 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
