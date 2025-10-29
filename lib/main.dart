@@ -1,5 +1,15 @@
 import 'package:flutter/material.dart';
+// Impor semua layar
+import 'change_password_screen.dart'; 
+import 'guidance_form_screen.dart'; 
+import 'pendaftaran_ta.dart'; // Import file pendaftaran
 
+// Definisi konstanta
+const Color customBlue = Color(0xFF149BF6); 
+const double avatarRadius = 41.0; 
+const double bottomIconSize = 40.0; 
+
+// PENTING: Fungsi main() harus ada!
 void main() {
   runApp(const MyApp());
 }
@@ -10,74 +20,180 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SITAMA Login test',
-      debugShowCheckedModeBanner: false, // Menghilangkan banner "Debug"
+      title: 'Aplikasi Profil dan Tugas Akhir',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // Tema dasar untuk warna biru Polines
-        primarySwatch: Colors.blue,
-        // Properti untuk menghilangkan efek visual yang tidak ada di desain asli
-        splashFactory: NoSplash.splashFactory,
-        hoverColor: Colors.transparent,
+        primarySwatch: Colors.blue, 
+        brightness: Brightness.light, 
       ),
-      home: const LoginScreen(),
+      // Set MainScreenWrapper sebagai halaman awal
+      home: const MainScreenWrapper(),
     );
   }
 }
 
-// Menggunakan StatefulWidget agar kita bisa mengelola state seperti checkbox dan visibility
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+// ===========================================
+// WIDGET UTAMA (MAIN SCREEN WRAPPER)
+// ===========================================
+
+// Widget ini menampung BottomNavigationBar dan mengelola perpindahan antar tab.
+class MainScreenWrapper extends StatefulWidget {
+  const MainScreenWrapper({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<MainScreenWrapper> createState() => _MainScreenWrapperState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  // State untuk checkbox "Ingat Saya"
-  bool _rememberMe = true;
-  // State untuk toggle visibilitas password
-  bool _isPasswordVisible = false;
+class _MainScreenWrapperState extends State<MainScreenWrapper> {
+  // Index 1 adalah Pendaftaran TA (Ikon Notes) - Menjadi tab aktif saat start
+  int _selectedIndex = 1; 
+
+  // Daftar Widgets yang akan ditampilkan sesuai index BottomNavigationBar
+  static final List<Widget> _widgetOptions = <Widget>[
+    const Center(child: Text('Halaman Home')),              // Index 0: Home
+    const PendaftaranTaScreen(),                       // Index 1: Pendaftaran Tugas Akhir
+    const GuidanceFormScreen(),                          // Index 2: Formulir Bimbingan
+    const ProfileScreen(),                             // Index 3: Profil
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Scaffold untuk kerangka halaman
+    return Scaffold(
+      // Tampilkan Widget yang dipilih dari _widgetOptions
+      body: _widgetOptions.elementAt(_selectedIndex),
+      
+      // Bottom Navigation Bar
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          // Ikon description/notes yang aktif (biru)
+          BottomNavigationBarItem(icon: Icon(Icons.description), label: 'Daftar TA'),
+          // Ikon study/akademik
+          BottomNavigationBarItem(icon: Icon(Icons.school), label: 'Study'), 
+          // Ikon profil
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: customBlue, 
+        unselectedItemColor: Colors.grey, 
+        onTap: _onItemTapped,
+        iconSize: bottomIconSize, 
+        // Menonaktifkan label agar lebih mirip desain gambar
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        backgroundColor: Colors.white,
+        elevation: 10,
+        type: BottomNavigationBarType.fixed,
+      ),
+    );
+  }
+}
+
+// ===========================================
+// CLUSTER LAYAR PROFIL
+// ===========================================
+
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+    );
+  }
+
+  void _changePassword() {
+    // Navigasi ke layar Ubah Password
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
+    );
+  }
+
+  void _logout() {
+    _showSnackbar('Tombol Logout DITEKAN. Anda akan diarahkan ke halaman Login.');
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        // 1. BACKGROUND GRADASI
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            // Warna disesuaikan agar mirip dengan gambar (biru muda ke putih)
-            colors: [
-              Color(0xFFBBDEFB), // Biru Muda Polines Light (Bisa kamu ganti)
-              Color(0xFFFFFFFF), // Putih
-            ],
+            colors: [Color(0xFFE3F2FD), Colors.white, Color(0xFFE3F2FD)],
+            stops: [0.0, 0.4, 1.0],
           ),
         ),
-        // SingleChildScrollView agar layar bisa di-scroll saat keyboard muncul
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Jarak dari atas (margin)
-              SizedBox(height: MediaQuery.of(context).padding.top + 60),
-
-              // 2. HEADER: LOGO DAN NAMA APLIKASI
-              _buildHeader(),
+            children: <Widget>[
+              // Bagian Header Profil
+              Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                padding: const EdgeInsets.only(top: 40, bottom: 20, left: 20, right: 20),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+                  boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)],
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    CircleAvatar(
+                      radius: avatarRadius, 
+                      backgroundColor: customBlue.withOpacity(0.8), 
+                      child: const Text('H', style: TextStyle(fontSize: 40, color: Colors.white, fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(width: 20),
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text('Hanifah Yumna', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text('hanifahyumna@gmail.com', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
               
-              const SizedBox(height: 50),
-
-              // 3. FORM LOGIN
-              _buildLoginForm(context),
-
-              const SizedBox(height: 30),
-
-              // 4. TOMBOL UTAMA & LOGIN GOOGLE
-              _buildActionButtons(context),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  children: [
+                    _buildUserInfoRow(Icons.person, 'Hanifah Yumna', isBold: true),
+                    const SizedBox(height: 15),
+                    _buildUserInfoRow(Icons.badge, '3.34.24.2.05', isLink: true),
+                  ],
+                ),
+              ),
 
               const SizedBox(height: 40),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  children: <Widget>[
+                    _buildActionButton(context, icon: Icons.vpn_key, label: 'Ubah password', color: customBlue, onPressed: _changePassword),
+                    const SizedBox(height: 20),
+                    _buildActionButton(context, icon: Icons.logout, label: 'Logout', color: customBlue, onPressed: _logout),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 100),
             ],
           ),
         ),
@@ -85,205 +201,37 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // --- Widget Pembantu (Methods) ---
-
-  Widget _buildHeader() {
-    return Column(
-      children: [
-        // Logo (Pastikan nama file di assets/ sudah benar!)
-        Image.asset(
-          'assets/logo_polines.png', // Ganti ke 'assets/logo.jpeg' atau nama file kamu
-          height: 100, 
-        ),
-        const SizedBox(height: 15),
-        // SITAMA Text
-        const Text(
-          'SITAMA',
+  Widget _buildUserInfoRow(IconData icon, String text, {bool isLink = false, bool isBold = false}) {
+    return Row(
+      children: <Widget>[
+        Icon(icon, color: customBlue, size: 30),
+        const SizedBox(width: 15),
+        Text(
+          text,
           style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1565C0), // Warna biru tua
+            fontSize: 16,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            color: isLink ? customBlue : Colors.black,
+            decoration: isLink ? TextDecoration.underline : TextDecoration.none,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildLoginForm(BuildContext context) {
-    // Theme data untuk border dan dekorasi input
-    final inputDecoration = InputDecoration(
-      hintText: 'Alamat Email',
-      contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
-      // Border default
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: const BorderSide(color: Color(0xFFBBDEFB)),
+  Widget _buildActionButton(BuildContext context, {required IconData icon, required String label, required Color color, required VoidCallback onPressed}) {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, color: Colors.white),
+        label: Text(label, style: const TextStyle(fontSize: 16, color: Colors.white)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
       ),
-      // Border saat tidak fokus
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: const BorderSide(color: Color(0xFFBBDEFB)), 
-      ),
-      // Border saat fokus (biru)
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: const BorderSide(color: Color(0xFF2196F3), width: 2.0),
-      ),
-    );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Label Alamat Email
-        const Text('Alamat Email', style: TextStyle(fontWeight: FontWeight.w500)),
-        const SizedBox(height: 8),
-        TextField(
-          decoration: inputDecoration.copyWith(hintText: 'Alamat Email'),
-          keyboardType: TextInputType.emailAddress,
-        ),
-        
-        const SizedBox(height: 20),
-
-        // Label Password
-        const Text('Password', style: TextStyle(fontWeight: FontWeight.w500)),
-        const SizedBox(height: 8),
-        // Password Field
-        TextField(
-          obscureText: !_isPasswordVisible, // Menggunakan state
-          decoration: inputDecoration.copyWith(
-            hintText: 'Password',
-            // Ikon mata untuk toggle password
-            suffixIcon: IconButton(
-              icon: Icon(
-                _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                color: Colors.grey,
-              ),
-              onPressed: () {
-                // Mengubah state saat ikon diklik
-                setState(() {
-                  _isPasswordVisible = !_isPasswordVisible;
-                });
-              },
-            ),
-          ),
-        ),
-        
-        const SizedBox(height: 10),
-
-        // Checkbox "Ingat Saya" dan "Lupa password?"
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // Checkbox dan Text
-            Row(
-              children: [
-                SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: Checkbox(
-                    value: _rememberMe, // Menggunakan state
-                    onChanged: (bool? newValue) {
-                      setState(() {
-                        _rememberMe = newValue ?? false;
-                      });
-                    },
-                    activeColor: const Color(0xFF2196F3),
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap, // Membuat lebih ringkas
-                  ),
-                ),
-                const SizedBox(width: 4),
-                const Text('Ingat Saya', style: TextStyle(fontSize: 14)),
-              ],
-            ),
-            
-            // Lupa Password Button
-            TextButton(
-              onPressed: () {},
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: const Text(
-                'Lupa password?',
-                style: TextStyle(color: Color(0xFF2196F3), fontSize: 14),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButtons(BuildContext context) {
-    return Column(
-      children: [
-        // Tombol Masuk
-        SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2196F3), // Biru Solid
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              elevation: 0,
-            ),
-            child: const Text(
-              'Masuk',
-              style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.w600),
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 20),
-        
-        // Teks "atau"
-        const Text('atau', style: TextStyle(color: Colors.grey)),
-        
-        const SizedBox(height: 20),
-
-        // Tombol Login Google Polines
-        SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: OutlinedButton(
-            onPressed: () {},
-            style: OutlinedButton.styleFrom(
-              backgroundColor: Colors.white,
-              side: const BorderSide(color: Color(0xFF2196F3), width: 1.0),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Menggunakan aset gambar Google (harus ada di assets/images/icon_google.png)
-                // Jika kamu kesulitan dengan ikon Google, ganti baris ini dengan Icon(Icons.g_mobiledata, size: 30, color: Colors.blue)
-                Image.asset(
-                  'assets/google.png', // Ganti dengan path ikon Google kamu
-                  height: 20,
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'Masuk dengan Email Polines',
-                  style: TextStyle(fontSize: 16, color: Colors.black54),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        // Keterangan (untuk Dosen)
-        const Text(
-          '(untuk Dosen)',
-          style: TextStyle(fontSize: 12, color: Colors.grey),
-        ),
-      ],
     );
   }
 }
