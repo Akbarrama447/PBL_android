@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sitama/screen/bimbingan_screen.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -222,7 +224,13 @@ class _LoginScreenState extends State<LoginScreen> {
           width: double.infinity,
           height: 50,
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const BimbinganScreen()),
+              );
+            },
+
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2196F3), // Biru Solid
               shape: RoundedRectangleBorder(
