@@ -26,7 +26,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  
+  google_fonts: ^6.2.1      # <-- Ditambahkan untuk custom font
+  intl: ^0.19.0             # <-- Ditambahkan untuk format tanggal
+  table_calendar: ^3.1.1    # <-- Ditambahkan untuk widget kalender
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
@@ -52,7 +54,7 @@ flutter:
   assets:
     - assets/logo.jpeg
     - assets/google.png
-    
+    - assets/kalender.png
 
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. (Komentar lain saya biarkan untuk referensi)
