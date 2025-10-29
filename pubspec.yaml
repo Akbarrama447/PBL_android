@@ -13,10 +13,9 @@ dependencies:
 
   # Dependensi yang dibutuhkan oleh project
   cupertino_icons: ^1.0.8
-  google_fonts: ^6.2.1
-  intl: ^0.19.0
-  table_calendar: ^3.1.1
-
+  google_fonts: ^6.2.1      # <-- Ditambahkan untuk custom font
+  intl: ^0.19.0             # <-- Ditambahkan untuk format tanggal
+  table_calendar: ^3.1.1    # <-- Ditambahkan untuk widget kalender
 
 dev_dependencies:
   flutter_test:
@@ -26,9 +25,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # Aset untuk gambar
+  # Aset untuk gambar (indentasi sudah diperbaiki)
   assets:
-    - assets/logo.jpeg
-    - assets/PoliteknikNegeriSemarang.png
-    - assets/google.png
-    - assets/kalender.png # <-- DITAMBAHKAN untuk ikon kalender kosong
+    - assets/kalender.png
